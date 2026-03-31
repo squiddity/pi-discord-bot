@@ -1,6 +1,6 @@
 # pi-discord-bot
 
-A small Discord harness built around Pi primitives.
+A Discord bot for [Pi](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent) that lets you use your Pi agent in DMs and servers.
 
 It keeps Pi as the agent core and adds a Discord transport layer with:
 - one runner per conversation
@@ -8,6 +8,47 @@ It keeps Pi as the agent core and adds a Discord transport layer with:
 - Discord-native embeds, buttons, and select menus
 - approval-gated Discord admin actions
 - systemd-friendly local operation
+
+## Quick start
+
+1. Install Pi: [Pi quick start guide](https://github.com/badlogic/pi-mono/tree/main/packages/coding-agent#quick-start)
+2. Install this package:
+
+```bash
+pi install npm:pi-discord-bot
+```
+
+3. Start Pi and ask it to guide setup:
+
+```text
+/skill:pi-discord-bot help me set up the bot
+```
+
+## What users can do
+
+In DMs:
+- `help me debug this error`
+- `summarize this file`
+- `write a Python script for me`
+
+In servers:
+- `@your-bot help me build a React component`
+- `@your-bot explain this stack trace`
+
+Text commands:
+- `/help`
+- `/session`
+- `/tree`
+- `/model`
+- `/settings`
+- `/stop`
+
+## Why use this
+
+- Uses Pi's shared auth, settings, models, skills, and extensions
+- Keeps Discord as a transport layer instead of reimplementing an agent
+- Supports both chat-style prompting and command-style interaction
+- Works locally and with systemd
 
 ## Architecture
 
