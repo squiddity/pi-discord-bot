@@ -2,6 +2,12 @@ import type { ButtonInteraction, ChatInputCommandInteraction, StringSelectMenuIn
 import type { DiscordEvent } from "./discord-types.js";
 import * as log from "./log.js";
 
+function clearByPrefix<T>(registry: Map<string, T>, prefix: string): void {
+  for (const key of registry.keys()) {
+    if (key.startsWith(prefix)) registry.delete(key);
+  }
+}
+
 export interface PendingInteractionState {
   pendingSlashInteractions: Map<string, ChatInputCommandInteraction>;
   pendingModelSelections: Map<string, { userId: string; resolve: (value: string | null) => void }>;
@@ -24,6 +30,7 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
   if (modelRequest) {
     if (interaction.user.id !== modelRequest.userId) return rejectForeignInteraction(interaction, "This selector belongs to another user.");
     state.pendingModelSelections.delete(interaction.customId);
+    clearByPrefix(state.pendingModelPages, interaction.customId.replace(/:select$/, ":"));
     await interaction.update({ content: `Selected model: ${interaction.values[0]}`, embeds: [], components: [] });
     modelRequest.resolve(interaction.values[0] ?? null);
     return true;
@@ -33,6 +40,7 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
   if (scopedRequest) {
     if (interaction.user.id !== scopedRequest.userId) return rejectForeignInteraction(interaction, "This selector belongs to another user.");
     state.pendingScopedSelections.delete(interaction.customId);
+    clearByPrefix(state.pendingScopedPages, interaction.customId.replace(/:select$/, ":"));
     await interaction.update({ content: interaction.values.length > 0 ? `Scoped models updated (${interaction.values.length} selected).` : "Scoped models cleared.", embeds: [], components: [] });
     scopedRequest.resolve(interaction.values);
     return true;
@@ -42,6 +50,7 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
   if (treeRequest) {
     if (interaction.user.id !== treeRequest.userId) return rejectForeignInteraction(interaction, "This tree browser belongs to another user.");
     state.pendingTreeSelections.delete(interaction.customId);
+    clearByPrefix(state.pendingTreePages, interaction.customId.replace(/:select$/, ":"));
     await interaction.update({ content: `Navigating to ${interaction.values[0]}...`, embeds: [], components: [] });
     log.info(`tree navigate selected by ${interaction.user.username}: ${interaction.values[0]}`);
     treeRequest.resolve(interaction.values[0] ?? null);

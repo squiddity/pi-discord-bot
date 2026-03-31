@@ -96,6 +96,16 @@ function isUiCommand(command: string): boolean {
   ]).has(command);
 }
 
+function isImmediateCommand(command: string): boolean {
+  return new Set([
+    "/help",
+    "/session",
+    "/tree",
+    "/model",
+    "/settings",
+  ]).has(command);
+}
+
 async function handleCommand(event: DiscordEvent, transport: DiscordBot): Promise<boolean> {
   const text = event.text.trim();
   if (!text.startsWith("/")) return false;
@@ -109,7 +119,7 @@ async function handleCommand(event: DiscordEvent, transport: DiscordBot): Promis
     await ctx.setWorking(false);
   }
 
-  if (state.running && command !== "/stop") {
+  if (state.running && command !== "/stop" && !isImmediateCommand(command)) {
     await ctx.replaceMessage("Already working. Use /stop first, then retry your command.");
     return true;
   }
@@ -144,7 +154,6 @@ async function handleCommand(event: DiscordEvent, transport: DiscordBot): Promis
         while (true) {
           const selected = await transport.promptTreeSelection(event, { ...browser, page });
           if (!selected || selected === "close") {
-            await ctx.replaceMessage(state.runner.getTreeSummary());
             return true;
           }
           if (selected === "prev") {

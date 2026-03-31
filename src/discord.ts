@@ -35,6 +35,11 @@ import { clearPending, registerManyPending, registerPending, resolveOnTimeout } 
 
 export type { DiscordContext, DiscordEvent, DiscordHandler } from "./discord-types.js";
 
+function isImmediateCommandText(text: string): boolean {
+  const command = text.trim().split(/\s+/)[0];
+  return new Set(["/help", "/session", "/tree", "/model", "/settings"]).has(command);
+}
+
 class ChannelQueue {
   private queue: Array<() => Promise<void>> = [];
   private processing = false;
@@ -206,7 +211,11 @@ export class DiscordBot {
       attachments: attachments as StoredAttachment[],
     };
 
-    this.queueFor(conversationKey).enqueue(() => this.handler.handleEvent(event, this));
+    if (isImmediateCommandText(cleanedText)) {
+      void this.handler.handleEvent(event, this);
+    } else {
+      this.queueFor(conversationKey).enqueue(() => this.handler.handleEvent(event, this));
+    }
   }
 
   private async onSelectMenu(interaction: StringSelectMenuInteraction): Promise<void> {
@@ -240,7 +249,11 @@ export class DiscordBot {
 
     const event = buildSlashEvent(interaction, text);
     const key = this.getConversationKeyFromIds(event.guildId, event.channelId, event.threadId, event.userId);
-    this.queueFor(key).enqueue(() => this.handler.handleEvent(event, this));
+    if (isImmediateCommandText(text)) {
+      void this.handler.handleEvent(event, this);
+    } else {
+      this.queueFor(key).enqueue(() => this.handler.handleEvent(event, this));
+    }
   }
 
   getConversationKey(message: Message): string {
