@@ -76,7 +76,7 @@ function createRunner(workspaceDir: string, conversationKey: string): AgentRunne
     convertToLlm,
     getApiKey: async (): Promise<string> => {
       const currentModel = agent.state.model as Model<any> | undefined;
-      const key = currentModel ? await authStorage.getApiKey(currentModel.provider) : undefined;
+      const key = currentModel ? await modelRegistry.getApiKeyForProvider(currentModel.provider) : undefined;
       if (!key) throw new Error(`No auth configured for ${formatModel(currentModel)}. Use Pi auth/login first.`);
       return key;
     },
